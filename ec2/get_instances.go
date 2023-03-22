@@ -16,11 +16,6 @@ type Instance struct {
 	Name         string
 }
 
-type Tag struct {
-	Key   string
-	Value string
-}
-
 var cfg aws.Config
 
 func init() {
