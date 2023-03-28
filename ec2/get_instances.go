@@ -29,28 +29,43 @@ func init() {
 func GetInstances() ([]Instance, error) {
 	ec2Client := ec2.NewFromConfig(cfg)
 
-	instancesOutput, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{})
-	if err != nil {
-		return nil, fmt.Errorf("error getting ec2 instances: %v", err)
-	}
-
 	var taggedEc2Instances []Instance
 
-	for _, reservation := range instancesOutput.Reservations {
-		for _, instance := range reservation.Instances {
-			taggedEc2Instance := Instance{
-				ID:           *instance.InstanceId,
-				InstanceType: string(instance.InstanceType),
+	var nextToken *string
+
+	for {
+
+		instancesOutput, err := ec2Client.DescribeInstances(context.Background(), &ec2.DescribeInstancesInput{
+			MaxResults: aws.Int32(100),
+			NextToken:  nextToken,
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("error getting ec2 instances: %v", err)
+		}
+
+		for _, reservation := range instancesOutput.Reservations {
+			for _, instance := range reservation.Instances {
+				taggedEc2Instance := Instance{
+					ID:           *instance.InstanceId,
+					InstanceType: string(instance.InstanceType),
+				}
+
+				shivaManaged := hasShivaManagedTag(instance.Tags)
+
+				if shivaManaged {
+					taggedEc2Instance.Name = getInstanceTagValue(instance.Tags, "Name")
+
+					taggedEc2Instances = append(taggedEc2Instances, taggedEc2Instance)
+				}
+
 			}
+		}
 
-			shivaManaged := hasShivaManagedTag(instance.Tags)
+		nextToken = instancesOutput.NextToken
 
-			if shivaManaged {
-				taggedEc2Instance.Name = getInstanceTagValue(instance.Tags, "Name")
-
-				taggedEc2Instances = append(taggedEc2Instances, taggedEc2Instance)
-			}
-
+		if nextToken == nil {
+			break
 		}
 	}
 
