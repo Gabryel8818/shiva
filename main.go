@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"shiva/ec2"
+	"shiva/internal/service/ec2"
 )
 
 func main() {
@@ -15,4 +15,12 @@ func main() {
 	}
 
 	fmt.Println(instances)
+
+	result, err := ec2.StopEC2Instances(instances)
+	if err != nil {
+		log.Fatalf("Erro: %v", err)
+	}
+
+	fmt.Println(result)
+
 }
