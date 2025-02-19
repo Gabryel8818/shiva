@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  shiva:
+    build: .
+    container_name: shiva
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    volumes:
+      - .:/app 

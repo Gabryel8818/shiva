@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"shiva/internal/service/ec2"
+	ec2 "shiva/internal/service/aws"
 )
 
 func main() {
